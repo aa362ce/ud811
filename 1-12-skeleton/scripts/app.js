@@ -68,6 +68,7 @@
     var label = selected.textContent;
     app.getForecast(key, label);
     app.selectedCities.push({key: key, label: label});
+    app.saveSelectedCities();
     app.toggleAddDialog(false);
   });
 
@@ -82,6 +83,11 @@
    * Methods to update/refresh the UI
    *
    ****************************************************************************/
+
+  // Save selected cities to the cache
+  app.saveSelectedCities = function() {
+    window.localforage.setItem('selectedCities',app.selectedCities);
+  }
 
   // Toggles the visibility of the add new city dialog.
   app.toggleAddDialog = function(visible) {
@@ -177,6 +183,21 @@
     });
   };
 
-  app.updateForecastCard(injectedForecast);
+  document.addEventListener('DOMContentLoaded', function() {
+    window.localforage.getItem('selectedCities', function(err,cities){
+      if(cities) {
+        app.selectedCities = cities;
+        cities.forEach(function(city){
+          app.getForecast(city.key, city.label);
+        });
+      } else {
+        app.updateForecastCard(injectedForecast);
+        app.selectedCities = [{key:injectedForecast.key, label:injectedForecast.label}];
+        app.saveSelectedCities();
+      }
+    });
+  });
+
+
 
 })();
